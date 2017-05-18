@@ -1,3 +1,4 @@
+﻿[![Build Status](https://travis-ci.org/BrujosDeJava/jrpg-2017a-servidor.svg?branch=master)](https://travis-ci.org/BrujosDeJava/jrpg-2017a-servidor)
 # World Of Middle Earth (WOME) - servidor
 
 ## Sobre las personas

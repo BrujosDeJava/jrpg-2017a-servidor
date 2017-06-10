@@ -1,12 +1,12 @@
 package servidor;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 import com.google.gson.Gson;
 
-import cliente.*;
-import dominio.*;
 import estados.Estado;
 import mensajeria.Comando;
 import mensajeria.Paquete;

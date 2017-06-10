@@ -1,7 +1,14 @@
 language: java
+
 jdk:
+
+  
   - oraclejdk7
   - openjdk7
 
-  before_install:
-  - wget -P $TRAVIS_BUILD_DIR/ https://github.com/BrujosDeJava/jrpg-2017a-cliente
+  
+
+before_install:
+ - "export DISPLAY=:99.0"
+ - "sh -e /etc/init.d/xvfb start"
+ - chmod +x gradlew

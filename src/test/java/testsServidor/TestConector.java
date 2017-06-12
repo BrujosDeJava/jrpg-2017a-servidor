@@ -3,6 +3,8 @@ package testsServidor;
 import org.junit.Assert;
 import org.junit.Test;
 
+import dominio.Inventario;
+import dominio.Item;
 import mensajeria.PaquetePersonaje;
 import mensajeria.PaqueteUsuario;
 import servidor.Conector;
@@ -18,8 +20,8 @@ public class TestConector {
 		Conector conector = new Conector();
 		conector.connect();
 
-		// Pasado este punto la conexión con la base de datos resultó exitosa
-
+		// Pasado este punto la conexiï¿½n con la base de datos resultï¿½ exitosa
+		conector.close();
 		Assert.assertEquals(1, 1);
 	}
 
@@ -34,11 +36,11 @@ public class TestConector {
 		PaqueteUsuario pu = new PaqueteUsuario();
 		pu.setUsername("UserTest");
 		pu.setPassword("test");
-
+		//pu.setIdPj(20);
 		conector.registrarUsuario(pu);
 
 		pu = conector.getUsuario("UserTest");
-
+		conector.close();
 		Assert.assertEquals("UserTest", pu.getUsername());
 	}
 
@@ -51,27 +53,29 @@ public class TestConector {
 		conector.connect();
 
 		PaquetePersonaje pp = new PaquetePersonaje();
-		pp.setCasta("Humano");
+		pp.setCasta("Asesino");
 		pp.setDestreza(1);
 		pp.setEnergiaTope(1);
 		pp.setExperiencia(1);
 		pp.setFuerza(1);
 		pp.setInteligencia(1);
 		pp.setNivel(1);
-		pp.setNombre("PjTest");
-		pp.setRaza("Asesino");
+		pp.setNombre("PjTest32");
+		pp.setRaza("Humano");
 		pp.setSaludTope(1);
-
+		Inventario inv = new Inventario();
+		inv.aÃ±adir(new Item(1));
+		inv.aÃ±adir(new Item(2));
+		pp.setInv(inv);
 		PaqueteUsuario pu = new PaqueteUsuario();
-		pu.setUsername("UserTest");
-		pu.setPassword("test");
-
+		pu.setUsername("123");
+		pu.setPassword("123");
 		conector.registrarUsuario(pu);
 		conector.registrarPersonaje(pp, pu);
-
+		conector.actualizarPersonaje(pp);
 		pp = conector.getPersonaje(pu);
-
-		Assert.assertEquals("PjTest", pp.getNombre());
+		conector.close();
+		Assert.assertEquals("PjTest32", pp.getNombre());
 	}
 
 	@Test
@@ -89,7 +93,7 @@ public class TestConector {
 		conector.registrarUsuario(pu);
 
 		boolean resultadoLogin = conector.loguearUsuario(pu);
-
+		conector.close();
 		Assert.assertEquals(true, resultadoLogin);
 	}
 
@@ -106,8 +110,31 @@ public class TestConector {
 		pu.setPassword("test");
 
 		boolean resultadoLogin = conector.loguearUsuario(pu);
-
+		conector.close();
 		Assert.assertEquals(false, resultadoLogin);
+	}
+	@Test
+	public void testGetItem(){
+		new Servidor();
+		Servidor.main(null);
+		Conector conector = new Conector();
+		conector.connect();
+		System.out.println(conector.getItem(2));
+		conector.close();
+	}
+	
+	@Test
+	public void getPersonajeTest(){
+		new Servidor();
+		Servidor.main(null);
+		Conector conector = new Conector();
+		conector.connect();
+		PaqueteUsuario pu = new PaqueteUsuario();
+		pu.setUsername("123");
+		pu.setPassword("123");
+		PaquetePersonaje pp= conector.getPersonaje(pu);
+		System.out.println(pp);
+		conector.close();
 	}
 
 }

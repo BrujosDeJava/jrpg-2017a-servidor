@@ -126,7 +126,7 @@ public class Conector {
 
 	}
 
-	public boolean registrarInventarioMochila(int idInventarioMochila) {
+	public boolean registrarInventarioMochila(int idPersonaje) {
 		try {
 			// Preparo la consulta para el registro el inventario en la base de
 			// datos
@@ -137,17 +137,28 @@ public class Conector {
 			stRegistrarInventario.execute();
 			int aux = rs.getInt(1);
 			// Le asigno el inventario y la mochila al personaje
+			
+			
+			PreparedStatement stRegistrarMochila = connect.prepareStatement("INSERT INTO mochila(slot1,slot2,slot3,slot4,slot5,slot6,slot7,slot8,slot9,slot10) VALUES (-1,-1,-1,-1,-1,-1,-1,-1,-1,-1)",
+					PreparedStatement.RETURN_GENERATED_KEYS);
+			ResultSet rs2 =stRegistrarMochila.getGeneratedKeys();
+			// Registro inventario y mochila
+			stRegistrarMochila.execute();
+			int aux2 = rs2.getInt(1);
+			
 			PreparedStatement stAsignarPersonaje = connect
-					.prepareStatement("UPDATE personaje SET idInventario=? WHERE idPersonaje=?");
+					.prepareStatement("UPDATE personaje SET idInventario=?, idMochila=? WHERE idPersonaje=?");
 			stAsignarPersonaje.setInt(1, aux);
-			stAsignarPersonaje.setInt(2, idInventarioMochila);
+			stAsignarPersonaje.setInt(2, aux2);
+			stAsignarPersonaje.setInt(3, idPersonaje);
 			stAsignarPersonaje.execute();
-
-			Servidor.log.append("Se ha registrado el inventario de " + idInventarioMochila + System.lineSeparator());
+			
+			
+			Servidor.log.append("Se ha registrado el inventario de " + idPersonaje + System.lineSeparator());
 			return true;
 
 		} catch (SQLException e) {
-			Servidor.log.append("Error al registrar el inventario de " + idInventarioMochila + System.lineSeparator());
+			Servidor.log.append("Error al registrar el inventario de " + idPersonaje + System.lineSeparator());
 			e.printStackTrace();
 			return false;
 		}
@@ -200,14 +211,12 @@ public class Conector {
 			PreparedStatement stActualizarInventario = connect
 					.prepareStatement("UPDATE inventario SET slot1=?, slot2=?, slot3=?, slot4=?, slot5=?, slot6=?"
 							+ "  WHERE idInventario=?");
-			for(int i = 1;i<7;i++){
-				if(i<=aux.getInv().size()){
-					stActualizarInventario.setInt(i, aux.getInv().get(i-1).getId());
-					System.out.println(aux.getInv().get(i-1).getId());
-				}
-				else
-					stActualizarInventario.setInt(i, -1);
-			}
+			stActualizarInventario.setInt(1,paquetePersonaje.getInv().getCabeza().getId());
+			stActualizarInventario.setInt(2,paquetePersonaje.getInv().getManos().getId());
+			stActualizarInventario.setInt(3,paquetePersonaje.getInv().getPies().getId());
+			stActualizarInventario.setInt(4,paquetePersonaje.getInv().getCuerpo().getId());
+			stActualizarInventario.setInt(5,paquetePersonaje.getInv().getAccesorio().getId());
+			stActualizarInventario.setInt(6,paquetePersonaje.getInv().getArma().getId());
 			stActualizarInventario.setInt(7, paquetePersonaje.getId());
 			stActualizarInventario.executeUpdate();
 			Servidor.log.append("El personaje " + paquetePersonaje.getNombre() + " se ha actualizado con �xito."  + System.lineSeparator());;
@@ -249,6 +258,7 @@ public class Conector {
 			personaje.setNombre(result.getString("nombre"));
 			personaje.setExperiencia(result.getInt("experiencia"));
 			personaje.setNivel(result.getInt("nivel"));
+			
 			Inventario inv = new Inventario();
 			PreparedStatement stSeleccionarInv = connect
 					.prepareStatement("SELECT * FROM inventario WHERE idInventario = ?");
@@ -257,7 +267,7 @@ public class Conector {
 			Item aux;
 			for(int i=0;i<6;i++){
 				aux =getItem(resultInv.getInt("slot"+(i+1)));
-				if(aux!=null)
+				if(aux.getId()!=-1)
 				inv.añadir(aux);
 			}
 			
@@ -303,7 +313,7 @@ public class Conector {
 	
 	public Item getItem(int id){
 		if(id==-1)
-			return null;
+			return new Item(-1);
 		Item aux = new Item(id);
 		try {
 			PreparedStatement st = connect.prepareStatement("SELECT * FROM Item WHERE idItem = ?");
@@ -315,6 +325,7 @@ public class Conector {
 			aux.setSalud(result.getInt("Salud"));
 			aux.setEnergia(result.getInt("Energia"));
 			aux.setNombre(result.getString("Nombre"));
+			aux.setTipo(result.getInt("Tipo"));
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}

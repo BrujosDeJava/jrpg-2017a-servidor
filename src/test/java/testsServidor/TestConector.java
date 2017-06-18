@@ -131,8 +131,8 @@ public class TestConector {
     Conector conector = new Conector();
     conector.connect();
     PaqueteUsuario pu = new PaqueteUsuario();
-    pu.setUsername("123");
-    pu.setPassword("123");
+    pu.setUsername("b");
+    pu.setPassword("");
     PaquetePersonaje pp = conector.getPersonaje(pu);
     System.out.println(pp);
     conector.close();

@@ -233,6 +233,7 @@ public class Conector {
 				stActualizarMochila.setInt(i+1, aux.getMochila().get(i).getId());
 				System.out.println("pasa por aca "+ aux.getMochila().get(i).getId());
 				}
+				else
 				stActualizarMochila.setInt(i+1, -1);
 			}
 			stActualizarMochila.setInt(11, paquetePersonaje.getId());

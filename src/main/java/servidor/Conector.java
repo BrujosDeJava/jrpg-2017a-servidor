@@ -22,7 +22,7 @@ public class Conector {
 		try {
 			Servidor.log.append("Estableciendo conexi�n con la base de datos..." + System.lineSeparator());
 			connect = DriverManager.getConnection("jdbc:sqlite:" + url);
-			Servidor.log.append("Conexi�n con la base de datos establecida con �xito." + System.lineSeparator());
+			Servidor.log.append("Conexión con la base de datos establecida con Éxito." + System.lineSeparator());
 		} catch (SQLException ex) {
 			Servidor.log.append("Fallo al intentar establecer la conexi�n con la base de datos. " + ex.getMessage()
 					+ System.lineSeparator());
@@ -33,7 +33,7 @@ public class Conector {
 		try {
 			connect.close();
 		} catch (SQLException ex) {
-			Servidor.log.append("Error al intentar cerrar la conexi�n con la base de datos." + System.lineSeparator());
+			Servidor.log.append("Error al intentar cerrar la conexión con la base de datos." + System.lineSeparator());
 			Logger.getLogger(Conector.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
@@ -207,7 +207,10 @@ public class Conector {
 			stActualizarPersonaje.setInt(7, paquetePersonaje.getNivel());
 			stActualizarPersonaje.setInt(8, paquetePersonaje.getId());
 			stActualizarPersonaje.executeUpdate();
+			
 			Inventario aux = paquetePersonaje.getInv();
+			System.out.println("Dentro del Server"+aux.getMochila());
+
 			PreparedStatement stActualizarInventario = connect
 					.prepareStatement("UPDATE inventario SET slot1=?, slot2=?, slot3=?, slot4=?, slot5=?, slot6=?"
 							+ "  WHERE idInventario=?");
@@ -219,7 +222,24 @@ public class Conector {
 			stActualizarInventario.setInt(6,paquetePersonaje.getInv().getArma().getId());
 			stActualizarInventario.setInt(7, paquetePersonaje.getId());
 			stActualizarInventario.executeUpdate();
-			Servidor.log.append("El personaje " + paquetePersonaje.getNombre() + " se ha actualizado con �xito."  + System.lineSeparator());;
+			
+			
+			PreparedStatement stActualizarMochila = connect
+					.prepareStatement("UPDATE mochila SET slot1=?, slot2=?, slot3=?, slot4=?, slot5=?, slot6=?, slot7=?, slot8=?, slot9=?, slot10=?"
+							+ "  WHERE idMochila=?");
+			int cant = aux.getMochila().size();
+			for(int i=0;i<10;i++){
+				if(i<cant){
+				stActualizarMochila.setInt(i+1, aux.getMochila().get(i).getId());
+				System.out.println("pasa por aca "+ aux.getMochila().get(i).getId());
+				}
+				stActualizarMochila.setInt(i+1, -1);
+			}
+			stActualizarMochila.setInt(11, paquetePersonaje.getId());
+			stActualizarMochila.executeUpdate();
+			
+			
+			Servidor.log.append("El personaje " + paquetePersonaje.getNombre() + " se ha actualizado con Éxito."  + System.lineSeparator());;
 		} catch (SQLException e) {
 			Servidor.log.append("Fallo al intentar actualizar el personaje " + paquetePersonaje.getNombre()  + System.lineSeparator());
 			e.printStackTrace();
@@ -271,6 +291,15 @@ public class Conector {
 				inv.añadir(aux);
 			}
 			
+			PreparedStatement stSeleccionarMochila = connect
+					.prepareStatement("SELECT * FROM mochila WHERE idMochila = ?");
+			stSeleccionarMochila.setInt(1, idPersonaje);
+			ResultSet resultMochila = stSeleccionarMochila.executeQuery();
+			for(int i=0;i<10;i++){
+				aux =getItem(resultMochila.getInt("slot"+(i+1)));
+				if(aux.getId()!=-1)
+				inv.añadir(aux);
+			}
 			personaje.setInv(inv);
 			// Devuelvo el paquete personaje con sus datos
 			return personaje;

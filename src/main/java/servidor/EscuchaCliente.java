@@ -7,6 +7,7 @@ import java.net.Socket;
 
 import com.google.gson.Gson;
 
+import dominio.Item;
 import estados.Estado;
 import mensajeria.Comando;
 import mensajeria.Paquete;
@@ -15,6 +16,7 @@ import mensajeria.PaqueteBatalla;
 import mensajeria.PaqueteDeMovimientos;
 import mensajeria.PaqueteDePersonajes;
 import mensajeria.PaqueteFinalizarBatalla;
+import mensajeria.PaqueteItem;
 import mensajeria.PaqueteMovimiento;
 import mensajeria.PaquetePersonaje;
 import mensajeria.PaqueteUsuario;
@@ -28,6 +30,7 @@ public class EscuchaCliente extends Thread {
 	private final Gson gson = new Gson();
 	
 	private PaquetePersonaje paquetePersonaje;
+	private PaqueteItem paqueteItem;
 	private PaqueteMovimiento paqueteMovimiento;
 	private PaqueteBatalla paqueteBatalla;
 	private PaqueteAtacar paqueteAtacar;
@@ -224,7 +227,22 @@ public class EscuchaCliente extends Thread {
 					}
 					
 					break;
-				
+				case Comando.ITEM:
+					paqueteItem = (PaqueteItem) gson.fromJson(cadenaLeida, PaqueteItem.class);
+					Item itemAux = Servidor.getConector().getItem(paqueteItem.getId());
+					paqueteItem.setBonusAtaque(itemAux.getAtaque());
+					paqueteItem.setBonusDefensa(itemAux.getDefensa());
+					paqueteItem.setBonusEnergia(itemAux.getEnergia());
+					paqueteItem.setBonusMagia(itemAux.getMagia());
+					paqueteItem.setBonusSalud(itemAux.getSalud());
+					paqueteItem.setNombre(itemAux.getNombre());
+					paqueteItem.setTipo(itemAux.getTipo());
+					
+					for(EscuchaCliente conectado : Servidor.getClientesConectados()){
+						conectado.getSalida().writeObject(gson.toJson(paqueteItem));
+					}
+					
+					break;
 				default:
 					break;
 				}

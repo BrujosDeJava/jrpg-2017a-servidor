@@ -17,6 +17,7 @@ import mensajeria.PaqueteDeMovimientos;
 import mensajeria.PaqueteDePersonajes;
 import mensajeria.PaqueteFinalizarBatalla;
 import mensajeria.PaqueteItem;
+import mensajeria.PaqueteMensajeSala;
 import mensajeria.PaqueteMovimiento;
 import mensajeria.PaquetePersonaje;
 import mensajeria.PaqueteUsuario;
@@ -35,6 +36,7 @@ public class EscuchaCliente extends Thread {
 	private PaqueteBatalla paqueteBatalla;
 	private PaqueteAtacar paqueteAtacar;
 	private PaqueteFinalizarBatalla paqueteFinalizarBatalla;
+	private PaqueteMensajeSala pqs;
 	
 	private PaqueteDeMovimientos paqueteDeMovimiento;
 	private PaqueteDePersonajes paqueteDePersonajes;
@@ -242,6 +244,16 @@ public class EscuchaCliente extends Thread {
 						conectado.getSalida().writeObject(gson.toJson(paqueteItem));
 					}
 					
+					break;
+					
+				case Comando.SALAMSJ:
+					pqs = (PaqueteMensajeSala) gson.fromJson(cadenaLeida, PaqueteMensajeSala.class);
+					pqs.setComando(Comando.SALAMSJ);
+					System.out.println("EscuchClineteete "+pqs.getMsj2());
+					for(EscuchaCliente conectado : Servidor.getClientesConectados()){
+						
+						conectado.getSalida().writeObject(gson.toJson(pqs));
+					}
 					break;
 				default:
 					break;

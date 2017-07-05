@@ -31,7 +31,7 @@ public class Servidor extends Thread {
 	private static Map<Integer, PaquetePersonaje> personajesConectados = new HashMap<>();
 
 	private static Thread server;
-	
+	private String texto = "";
 	private static ServerSocket serverSocket;
 	private static Conector conexionDB;
 	private final int PUERTO = 9999;
@@ -164,7 +164,7 @@ public class Servidor extends Thread {
 				clientesConectados.add(atencion);
 			}
 		} catch (Exception e) {
-			log.append("Fallo la conexión." + System.lineSeparator());
+			log.append("Fallo la conexiï¿½n." + System.lineSeparator());
 			e.printStackTrace();
 		}
 	}
@@ -183,5 +183,13 @@ public class Servidor extends Thread {
 
 	public static Conector getConector() {
 		return conexionDB;
+	}
+	
+	public void setTexto(String texto) {
+		this.texto = texto;
+	}
+	
+	public String getTexto() {
+		return texto;
 	}
 }

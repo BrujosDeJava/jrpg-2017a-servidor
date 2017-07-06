@@ -18,6 +18,8 @@ import mensajeria.PaqueteDePersonajes;
 import mensajeria.PaqueteFinalizarBatalla;
 import mensajeria.PaqueteItem;
 import mensajeria.PaqueteMensajeSala;
+import mensajeria.PaqueteMercado;
+import mensajeria.PaqueteMochila;
 import mensajeria.PaqueteMovimiento;
 import mensajeria.PaquetePersonaje;
 import mensajeria.PaqueteUsuario;
@@ -37,9 +39,11 @@ public class EscuchaCliente extends Thread {
 	private PaqueteAtacar paqueteAtacar;
 	private PaqueteFinalizarBatalla paqueteFinalizarBatalla;
 	private PaqueteMensajeSala pqs;
+	private PaqueteMochila pmochila;
 	
 	private PaqueteDeMovimientos paqueteDeMovimiento;
 	private PaqueteDePersonajes paqueteDePersonajes;
+	private PaqueteMercado pmerca;
 
 	public EscuchaCliente(String ip, Socket socket, ObjectInputStream entrada, ObjectOutputStream salida) {
 		this.socket = socket;
@@ -117,16 +121,18 @@ public class EscuchaCliente extends Thread {
 
 				case Comando.SALIR:
 					
+					
 					// Cierro todo
 					entrada.close();
 					salida.close();
 					socket.close();
 					
 					// Lo elimino de los clientes conectados
+					System.out.println("ID "+paqueteUsuario.getIdPj());
 					Servidor.getClientesConectados().remove(this);
 					
 					// Indico que se desconecto
-					Servidor.log.append(paquete.getIp() + " se ha desconectado." + System.lineSeparator());
+					Servidor.log.append(paquete.getIp() + " se ha desconectadoasdasd." + System.lineSeparator());
 					
 					return;
 
@@ -249,12 +255,21 @@ public class EscuchaCliente extends Thread {
 				case Comando.SALAMSJ:
 					pqs = (PaqueteMensajeSala) gson.fromJson(cadenaLeida, PaqueteMensajeSala.class);
 					pqs.setComando(Comando.SALAMSJ);
-					System.out.println("EscuchClineteete "+pqs.getMsj2());
 					for(EscuchaCliente conectado : Servidor.getClientesConectados()){
 						
 						conectado.getSalida().writeObject(gson.toJson(pqs));
 					}
 					break;
+				case Comando.MOCHILA:
+					pmochila = (PaqueteMochila) gson.fromJson(cadenaLeida, PaqueteMochila.class);
+					Servidor.getMercado().añadir(pmochila.getId(), pmochila.getMochila());
+					pmerca = new PaqueteMercado(Servidor.getMercado(), pmochila.getId());
+					
+					pmerca.setComando(Comando.MERCADO);
+					for(EscuchaCliente conectado : Servidor.getClientesConectados()){
+						conectado.getSalida().writeObject(gson.toJson(pmerca));
+					}
+				
 				default:
 					break;
 				}
@@ -269,13 +284,24 @@ public class EscuchaCliente extends Thread {
 			Servidor.getPersonajesConectados().remove(paquetePersonaje.getId());
 			Servidor.getUbicacionPersonajes().remove(paquetePersonaje.getId());
 			Servidor.getClientesConectados().remove(this);
-
+			
+			// se notifican ls cosas
 			for (EscuchaCliente conectado : Servidor.getClientesConectados()) {
 				paqueteDePersonajes = new PaqueteDePersonajes(Servidor.getPersonajesConectados());
 				paqueteDePersonajes.setComando(Comando.CONEXION);
 				conectado.salida.writeObject(gson.toJson(paqueteDePersonajes, PaqueteDePersonajes.class));
 			}
-
+			//con este se renueva el mercado cuando se desconecta
+			pmerca = new PaqueteMercado(Servidor.getMercado(), pmochila.getId());
+			pmerca.setComando(Comando.MERCADO);
+			Servidor.getMercado().getMochilas().remove(idPersonaje);
+			for(EscuchaCliente conectado : Servidor.getClientesConectados()){
+				conectado.getSalida().writeObject(gson.toJson(pmerca));
+			}
+			
+			// Aca hay que hacer magia
+			
+			
 			Servidor.log.append(paquete.getIp() + " se ha desconectado." + System.lineSeparator());
 
 		} catch (IOException | ClassNotFoundException e) {

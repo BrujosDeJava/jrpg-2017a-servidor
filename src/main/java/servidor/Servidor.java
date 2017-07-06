@@ -20,13 +20,14 @@ import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
+import dominio.Mercado;
 import mensajeria.PaqueteMovimiento;
 import mensajeria.PaquetePersonaje;
 
 public class Servidor extends Thread {
 
 	private static ArrayList<EscuchaCliente> clientesConectados = new ArrayList<>();
-	
+	private static Mercado mercado = new Mercado();
 	private static Map<Integer, PaqueteMovimiento> ubicacionPersonajes = new HashMap<>();
 	private static Map<Integer, PaquetePersonaje> personajesConectados = new HashMap<>();
 
@@ -191,5 +192,9 @@ public class Servidor extends Thread {
 	
 	public String getTexto() {
 		return texto;
+	}
+	
+	public static Mercado getMercado() {
+		return mercado;
 	}
 }

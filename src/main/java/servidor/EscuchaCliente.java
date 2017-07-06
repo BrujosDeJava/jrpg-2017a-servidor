@@ -13,9 +13,11 @@ import mensajeria.Comando;
 import mensajeria.Paquete;
 import mensajeria.PaqueteAtacar;
 import mensajeria.PaqueteBatalla;
+import mensajeria.PaqueteChatPrivado;
 import mensajeria.PaqueteDeMovimientos;
 import mensajeria.PaqueteDePersonajes;
 import mensajeria.PaqueteFinalizarBatalla;
+import mensajeria.PaqueteInicioSesion;
 import mensajeria.PaqueteItem;
 import mensajeria.PaqueteMensajeSala;
 import mensajeria.PaqueteMercado;
@@ -23,6 +25,7 @@ import mensajeria.PaqueteMochila;
 import mensajeria.PaqueteMovimiento;
 import mensajeria.PaquetePersonaje;
 import mensajeria.PaqueteUsuario;
+import mensajeria.Usuario;
 
 public class EscuchaCliente extends Thread {
 
@@ -40,10 +43,11 @@ public class EscuchaCliente extends Thread {
 	private PaqueteFinalizarBatalla paqueteFinalizarBatalla;
 	private PaqueteMensajeSala pqs;
 	private PaqueteMochila pmochila;
-	
+	private PaqueteInicioSesion pini;
 	private PaqueteDeMovimientos paqueteDeMovimiento;
 	private PaqueteDePersonajes paqueteDePersonajes;
 	private PaqueteMercado pmerca;
+	private PaqueteChatPrivado pcp;
 
 	public EscuchaCliente(String ip, Socket socket, ObjectInputStream entrada, ObjectOutputStream salida) {
 		this.socket = socket;
@@ -112,11 +116,26 @@ public class EscuchaCliente extends Thread {
 						idPersonaje = paquetePersonaje.getId();
 						
 						salida.writeObject(gson.toJson(paquetePersonaje));
+						pini = new PaqueteInicioSesion();
+						pini.setComando(Comando.RECIBIRCONECTADOS);
+						for(EscuchaCliente conectado : Servidor.getClientesConectados()) {
+							pini.add(new Usuario(conectado.getPaquetePersonaje().getNombre(), conectado.getIdPersonaje()));
+						}
+						
+						for(EscuchaCliente conectado : Servidor.getClientesConectados()) {
+							conectado.getSalida().writeObject(gson.toJson(pini));
+
+						}
 						
 					} else {
 						paqueteSv.setMensaje(Paquete.msjFracaso);
 						salida.writeObject(gson.toJson(paqueteSv));
 					}
+					
+					
+					
+					
+					
 					break;
 
 				case Comando.SALIR:
@@ -243,7 +262,7 @@ public class EscuchaCliente extends Thread {
 					paqueteItem.setBonusEnergia(itemAux.getEnergia());
 					paqueteItem.setBonusMagia(itemAux.getMagia());
 					paqueteItem.setBonusSalud(itemAux.getSalud());
-					paqueteItem.setNombre(itemAux.getNombre());
+					paqueteItem.setNombre(itemAux.getNombre());	
 					paqueteItem.setTipo(itemAux.getTipo());
 					
 					for(EscuchaCliente conectado : Servidor.getClientesConectados()){
@@ -269,7 +288,18 @@ public class EscuchaCliente extends Thread {
 					for(EscuchaCliente conectado : Servidor.getClientesConectados()){
 						conectado.getSalida().writeObject(gson.toJson(pmerca));
 					}
-				
+					break;
+				case Comando.MENSAJEPRIVADO:
+					pcp = (PaqueteChatPrivado) gson.fromJson(cadenaLeida, PaqueteChatPrivado.class);
+					pcp.setComando(Comando.MENSAJEPRIVADO);
+					for(EscuchaCliente conectado : Servidor.getClientesConectados()){
+						System.out.println("Direccion "+pcp.getDireccion()+
+								"Conectado n "+conectado.getId());
+						if(pcp.getDireccion()==conectado.getIdPersonaje())
+						conectado.getSalida().writeObject(gson.toJson(pcp));
+					}
+					break;
+					
 				default:
 					break;
 				}
@@ -292,11 +322,14 @@ public class EscuchaCliente extends Thread {
 				conectado.salida.writeObject(gson.toJson(paqueteDePersonajes, PaqueteDePersonajes.class));
 			}
 			//con este se renueva el mercado cuando se desconecta
-			pmerca = new PaqueteMercado(Servidor.getMercado(), pmochila.getId());
-			pmerca.setComando(Comando.MERCADO);
-			Servidor.getMercado().getMochilas().remove(idPersonaje);
-			for(EscuchaCliente conectado : Servidor.getClientesConectados()){
-				conectado.getSalida().writeObject(gson.toJson(pmerca));
+			if(Servidor.getMercado().getMochilas().get(idPersonaje)!=null){
+				pmerca = new PaqueteMercado(Servidor.getMercado(), pmochila.getId());
+				pmerca.setComando(Comando.MERCADO);
+				Servidor.getMercado().getMochilas().remove(idPersonaje);
+				for(EscuchaCliente conectado : Servidor.getClientesConectados()){
+					conectado.getSalida().writeObject(gson.toJson(pmerca));
+			}
+			
 			}
 			
 			// Aca hay que hacer magia

@@ -18,6 +18,7 @@ import mensajeria.PaqueteDeMovimientos;
 import mensajeria.PaqueteDePersonajes;
 import mensajeria.PaqueteFinalizarBatalla;
 import mensajeria.PaqueteInicioSesion;
+import mensajeria.PaqueteIntercambio;
 import mensajeria.PaqueteItem;
 import mensajeria.PaqueteMensajeSala;
 import mensajeria.PaqueteMercado;
@@ -48,6 +49,7 @@ public class EscuchaCliente extends Thread {
 	private PaqueteDePersonajes paqueteDePersonajes;
 	private PaqueteMercado pmerca;
 	private PaqueteChatPrivado pcp;
+	private PaqueteIntercambio pi;
 
 	public EscuchaCliente(String ip, Socket socket, ObjectInputStream entrada, ObjectOutputStream salida) {
 		this.socket = socket;
@@ -299,6 +301,27 @@ public class EscuchaCliente extends Thread {
 						conectado.getSalida().writeObject(gson.toJson(pcp));
 					}
 					break;
+				case Comando.INTERCAMBIO:
+					pi = (PaqueteIntercambio) gson.fromJson(cadenaLeida, PaqueteIntercambio.class);
+					pi.setComando(Comando.INTERCAMBIO);
+					for(EscuchaCliente conectado: Servidor.getClientesConectados()){
+						if(pi.getRequerido().getDuenio()==conectado.getIdPersonaje())
+						conectado.getSalida().writeObject(gson.toJson(pi));
+					}
+					
+					break;
+				case Comando.RESPUESTAINTERCAMBIO:
+					pi = (PaqueteIntercambio) gson.fromJson(cadenaLeida, PaqueteIntercambio.class);
+					pi.setComando(Comando.RESPUESTAINTERCAMBIO);
+					for(EscuchaCliente conectado: Servidor.getClientesConectados()){
+						System.out.println("Conectado: "+conectado.getIdPersonaje());
+						if(pi.getRequerido().getDuenio()==conectado.getIdPersonaje()
+								||pi.getOfrecido().getDuenio()==conectado.getIdPersonaje()){
+							System.out.println("Requerido "+pi.getRequerido().getDuenio()+
+									" Ofrecido "+pi.getOfrecido().getDuenio());
+							conectado.getSalida().writeObject(gson.toJson(pi));
+						}
+					}
 					
 				default:
 					break;

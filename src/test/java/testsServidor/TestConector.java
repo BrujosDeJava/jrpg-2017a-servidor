@@ -66,7 +66,6 @@ public class TestConector {
     Inventario inv = new Inventario();
     inv.añadir(new Item(1,2));
     inv.añadir(new Item(1,2));
-    System.out.println("fueradeladv "+inv.getMochila());
     pp.setInv(inv);
     PaqueteUsuario pu = new PaqueteUsuario();
     pu.setUsername("333");
@@ -121,7 +120,6 @@ public class TestConector {
     Servidor.main(null);
     Conector conector = new Conector();
     conector.connect();
-    System.out.println(conector.getItem(2));
     conector.close();
   }
 
@@ -135,7 +133,6 @@ public class TestConector {
     pu.setUsername("123");
     pu.setPassword("");
     PaquetePersonaje pp = conector.getPersonaje(pu);
-    System.out.println(pp);
     conector.close();
   }
 

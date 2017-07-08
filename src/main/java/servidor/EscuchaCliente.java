@@ -250,8 +250,7 @@ public class EscuchaCliente extends Thread {
 					
 					Servidor.getPersonajesConectados().remove(paquetePersonaje.getId());
 					Servidor.getPersonajesConectados().put(paquetePersonaje.getId(), paquetePersonaje);
-					
-					System.out.println(paquetePersonaje.getComando());
+					Servidor.getConector().actualizarInventario(paquetePersonaje);
 					for(EscuchaCliente conectado : Servidor.getClientesConectados()) {
 						conectado.getSalida().writeObject(gson.toJson(paquetePersonaje));
 					}
@@ -285,6 +284,7 @@ public class EscuchaCliente extends Thread {
 				case Comando.MOCHILA:
 					pmochila = (PaqueteMochila) gson.fromJson(cadenaLeida, PaqueteMochila.class);
 					Servidor.getMercado().añadir(pmochila.getId(), pmochila.getMochila());
+					
 					pmerca = new PaqueteMercado(Servidor.getMercado(), pmochila.getId());
 					
 					pmerca.setComando(Comando.MERCADO);

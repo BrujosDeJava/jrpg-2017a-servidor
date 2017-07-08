@@ -362,10 +362,36 @@ public class Conector {
 
 	public void actualizarInventario(PaquetePersonaje paquetePersonaje) {
 		Inventario inv = paquetePersonaje.getInv();
-		if(inv.getCabeza().getNombre()==null){
+		if(inv.getCabeza().getNombre()=="placeholder"){
+			inv.setCabeza(this.getItem(inv.getCabeza().getId()));
+			return;
 		}
-		
-		
-		paquetePersonaje.setInv(inv);		
+		if(inv.getCuerpo().getNombre()=="placeholder"){
+			inv.setCuerpo(this.getItem(inv.getCuerpo().getId()));
+			return;
+		}
+		if(inv.getManos().getNombre()=="placeholder"){
+			inv.setManos(this.getItem(inv.getManos().getId()));
+			return;
+		}
+		if(inv.getAccesorio().getNombre()=="placeholder"){
+			inv.setAccesorio(this.getItem(inv.getAccesorio().getId()));
+			return;
+		}
+		if(inv.getArma().getNombre()=="placeholder"){
+			inv.setArma(this.getItem(inv.getArma().getId()));
+			return;
+		}
+		if(inv.getPies().getNombre()=="placeholder"){
+			inv.setPies(this.getItem(inv.getPies().getId()));
+			return;
+		}
+		for(Item aux : paquetePersonaje.getInv().getMochila()){
+			if(aux.getNombre()=="placeholder"){
+				aux = getItem(aux.getId());
+				return;
+			}
+		}
+		paquetePersonaje.setInv(inv);
 	}
 }

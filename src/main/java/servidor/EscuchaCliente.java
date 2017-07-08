@@ -246,11 +246,13 @@ public class EscuchaCliente extends Thread {
 					
 				case Comando.ACTUALIZARPERSONAJE:
 					paquetePersonaje = (PaquetePersonaje) gson.fromJson(cadenaLeida, PaquetePersonaje.class);
+					Servidor.getConector().actualizarInventario(paquetePersonaje);
 					Servidor.getConector().actualizarPersonaje(paquetePersonaje);
 					
 					Servidor.getPersonajesConectados().remove(paquetePersonaje.getId());
 					Servidor.getPersonajesConectados().put(paquetePersonaje.getId(), paquetePersonaje);
-
+					
+					System.out.println(paquetePersonaje.getComando());
 					for(EscuchaCliente conectado : Servidor.getClientesConectados()) {
 						conectado.getSalida().writeObject(gson.toJson(paquetePersonaje));
 					}
@@ -313,6 +315,11 @@ public class EscuchaCliente extends Thread {
 				case Comando.RESPUESTAINTERCAMBIO:
 					pi = (PaqueteIntercambio) gson.fromJson(cadenaLeida, PaqueteIntercambio.class);
 					pi.setComando(Comando.RESPUESTAINTERCAMBIO);
+					if(pi.getRespuesta()){
+						Servidor.getMercado().getMochilas().remove(pi.getOfrecido().getDuenio());
+						Servidor.getMercado().getMochilas().remove(pi.getRequerido().getDuenio());
+
+					}
 					for(EscuchaCliente conectado: Servidor.getClientesConectados()){
 						System.out.println("Conectado: "+conectado.getIdPersonaje());
 						if(pi.getRequerido().getDuenio()==conectado.getIdPersonaje()
@@ -322,7 +329,17 @@ public class EscuchaCliente extends Thread {
 							conectado.getSalida().writeObject(gson.toJson(pi));
 						}
 					}
+					break;
+				case Comando.SALIRMERCADO:
 					
+					if(Servidor.getMercado().getMochilas().get(idPersonaje)!=null){
+						pmerca = new PaqueteMercado(Servidor.getMercado(), pmochila.getId());
+						pmerca.setComando(Comando.MERCADO);
+						Servidor.getMercado().getMochilas().remove(idPersonaje);
+						for(EscuchaCliente conectado : Servidor.getClientesConectados()){
+							conectado.getSalida().writeObject(gson.toJson(pmerca));
+						}
+					}
 				default:
 					break;
 				}
@@ -344,6 +361,21 @@ public class EscuchaCliente extends Thread {
 				paqueteDePersonajes.setComando(Comando.CONEXION);
 				conectado.salida.writeObject(gson.toJson(paqueteDePersonajes, PaqueteDePersonajes.class));
 			}
+			
+			
+			pini = new PaqueteInicioSesion();
+			pini.setComando(Comando.RECIBIRCONECTADOS);
+			for(EscuchaCliente conectado : Servidor.getClientesConectados()) {
+				if(conectado.getIdPersonaje()!=idPersonaje)
+				pini.add(new Usuario(conectado.getPaquetePersonaje().getNombre(), conectado.getIdPersonaje()));
+			}
+			
+			for(EscuchaCliente conectado : Servidor.getClientesConectados()) {
+				conectado.getSalida().writeObject(gson.toJson(pini));
+
+			}
+			
+			
 			//con este se renueva el mercado cuando se desconecta
 			if(Servidor.getMercado().getMochilas().get(idPersonaje)!=null){
 				pmerca = new PaqueteMercado(Servidor.getMercado(), pmochila.getId());

@@ -363,33 +363,11 @@ public class Conector {
 	}
 
 	public void actualizarInventario(PaquetePersonaje paquetePersonaje) {
-		Inventario inv = new Inventario();
-		int idPersonaje = paquetePersonaje.getId();
-		try {
-			PreparedStatement stSeleccionarInv = connect
-					.prepareStatement("SELECT * FROM inventario WHERE idInventario = ?");
-			stSeleccionarInv.setInt(1, idPersonaje);
-			ResultSet resultInv = stSeleccionarInv.executeQuery();
-			Item aux;
-			for(int i=0;i<6;i++){
-				aux =getItem(resultInv.getInt("slot"+(i+1)));
-				if(aux.getId()!=-1)
-				inv.añadir(aux);
-			}
-			
-			PreparedStatement stSeleccionarMochila = connect
-					.prepareStatement("SELECT * FROM mochila WHERE idMochila = ?");
-			stSeleccionarMochila.setInt(1, idPersonaje);
-			ResultSet resultMochila = stSeleccionarMochila.executeQuery();
-			for(int i=0;i<10;i++){
-				aux =getItem(resultMochila.getInt("slot"+(i+1)));
-				if(aux.getId()!=-1)
-				inv.añadir(aux);
-			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		Inventario inv = paquetePersonaje.getInv();
+		if(inv.getCabeza().getNombre()==null){
 		}
+		
+		
 		paquetePersonaje.setInv(inv);		
 	}
 }

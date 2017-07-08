@@ -209,7 +209,6 @@ public class Conector {
 			stActualizarPersonaje.executeUpdate();
 			
 			Inventario aux = paquetePersonaje.getInv();
-			System.out.println("Dentro del Server"+aux.getMochila());
 
 			PreparedStatement stActualizarInventario = connect
 					.prepareStatement("UPDATE inventario SET slot1=?, slot2=?, slot3=?, slot4=?, slot5=?, slot6=?"
@@ -231,7 +230,6 @@ public class Conector {
 			for(int i=0;i<10;i++){
 				if(i<cant){
 				stActualizarMochila.setInt(i+1, aux.getMochila().get(i).getId());
-				System.out.println("pasa por aca "+ aux.getMochila().get(i).getId());
 				}
 				else
 				stActualizarMochila.setInt(i+1, -1);

@@ -149,11 +149,10 @@ public class EscuchaCliente extends Thread {
 					socket.close();
 					
 					// Lo elimino de los clientes conectados
-					System.out.println("ID "+paqueteUsuario.getIdPj());
 					Servidor.getClientesConectados().remove(this);
 					
 					// Indico que se desconecto
-					Servidor.log.append(paquete.getIp() + " se ha desconectadoasdasd." + System.lineSeparator());
+					Servidor.log.append(paquete.getIp() + " se ha desconectado." + System.lineSeparator());
 					
 					return;
 
@@ -297,8 +296,6 @@ public class EscuchaCliente extends Thread {
 					pcp = (PaqueteChatPrivado) gson.fromJson(cadenaLeida, PaqueteChatPrivado.class);
 					pcp.setComando(Comando.MENSAJEPRIVADO);
 					for(EscuchaCliente conectado : Servidor.getClientesConectados()){
-						System.out.println("Direccion "+pcp.getDireccion()+
-								"Conectado n "+conectado.getId());
 						if(pcp.getDireccion()==conectado.getIdPersonaje())
 						conectado.getSalida().writeObject(gson.toJson(pcp));
 					}
@@ -321,11 +318,8 @@ public class EscuchaCliente extends Thread {
 
 					}
 					for(EscuchaCliente conectado: Servidor.getClientesConectados()){
-						System.out.println("Conectado: "+conectado.getIdPersonaje());
 						if(pi.getRequerido().getDuenio()==conectado.getIdPersonaje()
 								||pi.getOfrecido().getDuenio()==conectado.getIdPersonaje()){
-							System.out.println("Requerido "+pi.getRequerido().getDuenio()+
-									" Ofrecido "+pi.getOfrecido().getDuenio());
 							conectado.getSalida().writeObject(gson.toJson(pi));
 						}
 					}
